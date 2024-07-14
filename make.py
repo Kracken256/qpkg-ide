@@ -2,6 +2,7 @@
 
 # Compile the QUIX IDE Project for the user-specified platform
 
+import select
 from sys import argv
 from os import system, path, uname, getcwd, makedirs
 from datetime import datetime
@@ -13,8 +14,8 @@ platform_targets = {"ubuntu-22.04": "Ubuntu-22.04.Dockerfile"}
 # Define the build types that are supported
 #
 # --debug: Moderate optimization, debug symbols, no compression.
-# --test: Full optimization (includes LTO), no debug symbols, no compression.
-# --trace: Full optimization (includes LTO), no debug symbols, no compression,
+# --test: Full optimization (includes LTO), debug symbols, no compression.
+# --trace: Full optimization (includes LTO), debug symbols, no compression,
 #          profiling enabled, code coverage enabled.
 # --prerelease: Full optimization (includes LTO), debug symbols, compression, asserts disabled.
 # --release: Full optimization (includes LTO), no debug symbols, compression, code signing (if applicable),
@@ -27,6 +28,11 @@ build_type_dirs = {"--debug": "debug", "--test": "test",
                    "--trace": "trace",
                    "--prerelease": "prerelease",
                    "--release": "release"}
+build_type_cmake = {"--debug": "Debug", "--test": "Test",
+                    "--trace": "Trace",
+                    "--prerelease": "PreRelease",
+                    "--release": "Release"}
+cmake_platform_flags = {"ubuntu-22.04": "-DCMAKE_SYSTEM_NAME=Linux"}
 
 
 # Check if the user has provided the correct number of arguments
@@ -110,18 +116,28 @@ print("|" + " " * 78 + "|")
 
 # Run the local OS command and capture the output in variable `output` capture
 # stdout and stderr in the same variable
+# Get the output immediately, asynchronously
 output = Popen(local_os_command, shell=True,
                stdout=PIPE, stderr=PIPE)
 
-while True:
-    stdout_ln = output.stdout.readline()
-    stderr_ln = output.stderr.readline()
 
-    if not stdout_ln and not stderr_ln:
+while True:
+    stdout_ln = None
+    stderr_ln = None
+
+    # Check if data is available on stdout
+    if output.stdout in select.select([output.stdout], [], [], 0)[0]:
+        stdout_ln = output.stdout.readline()
+
+    # Check if data is available on stderr
+    if output.stderr in select.select([output.stderr], [], [], 0)[0]:
+        stderr_ln = output.stderr.readline()
+
+    if output.poll() is not None:
         break
 
     if stdout_ln:
-        l = stdout_ln.decode("utf-8").strip()
+        l = stdout_ln.decode().strip()
         while len(l) > 76:
             print("| " + l[:76] + " " * (76 - len(l[:76])) + " |")
             l = l[76:]
@@ -129,7 +145,7 @@ while True:
             print("| " + l + " " * (76 - len(l)) + " |")
 
     if stderr_ln:
-        l = stderr_ln.decode("utf-8").strip()
+        l = stderr_ln.decode().strip()
         while len(l) > 76:
             print("| " + l[:76] + " " * (76 - len(l[:76])) + " |")
             l = l[76:]
@@ -138,6 +154,7 @@ while True:
 
 print("|" + " " * 78 + "|")
 
+print("Done")
 output.wait()
 
 if output.returncode == 0:
@@ -176,7 +193,7 @@ build_directory = path.abspath(
 if not path.exists(build_directory):
     makedirs(build_directory)
 
-local_os_command = f"docker run --rm -v {getcwd()}:/src -v {build_directory}:/build quix-ide-{platform_name}:latest make {build_flag}"
+local_os_command = f"docker run --rm -v {getcwd()}:/src -v {build_directory}:/build quix-ide-{platform_name}:latest cmake -B /build -S /src -DCMAKE_BUILD_TYPE={build_type_cmake[build_flag]} {cmake_platform_flags[platform_name]} && docker run --rm -v {getcwd()}:/src -v {build_directory}:/build quix-ide-{platform_name}:latest cmake --build /build"
 l = f"Running the local OS command: \"{local_os_command}\""
 while len(l) > 76:
     print("| " + l[:76] + " " * (76 - len(l[:76])) + " |")
@@ -191,14 +208,22 @@ output = Popen(local_os_command, shell=True,
                stdout=PIPE, stderr=PIPE)
 
 while True:
-    stdout_ln = output.stdout.readline()
-    stderr_ln = output.stderr.readline()
+    stdout_ln = None
+    stderr_ln = None
 
-    if not stdout_ln and not stderr_ln:
+    # Check if data is available on stdout
+    if output.stdout in select.select([output.stdout], [], [], 0)[0]:
+        stdout_ln = output.stdout.readline()
+
+    # Check if data is available on stderr
+    if output.stderr in select.select([output.stderr], [], [], 0)[0]:
+        stderr_ln = output.stderr.readline()
+
+    if output.poll() is not None:
         break
 
     if stdout_ln:
-        l = stdout_ln.decode("utf-8").strip()
+        l = stdout_ln.decode().strip()
         while len(l) > 76:
             print("| " + l[:76] + " " * (76 - len(l[:76])) + " |")
             l = l[76:]
@@ -206,7 +231,7 @@ while True:
             print("| " + l + " " * (76 - len(l)) + " |")
 
     if stderr_ln:
-        l = stderr_ln.decode("utf-8").strip()
+        l = stderr_ln.decode().strip()
         while len(l) > 76:
             print("| " + l[:76] + " " * (76 - len(l[:76])) + " |")
             l = l[76:]
