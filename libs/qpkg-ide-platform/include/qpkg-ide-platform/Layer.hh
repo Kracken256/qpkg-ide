@@ -7,6 +7,7 @@
 
 namespace qpkg::ide::platform {
   class IPlatformLayer final {
+protected:
     static std::atomic<bool> m_initialized;
 
     bool init_layer();

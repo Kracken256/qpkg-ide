@@ -7,23 +7,23 @@ set(CMAKE_CXX_EXTENSIONS OFF)
 
 set(DEBUG_FLAGS -O2 -g3 -Wall -Wextra -Wpedantic)
 set(LD_DEBUG_FLAGS )
-set(LIBS_DEBUG )
+set(LIBS_DEBUG SDL2 SDL2_gfx)
 
 set(TEST_FLAGS -O3 -g3 -Wall -Wextra -Wpedantic)
 set(LD_TEST_FLAGS -flto)
-set(LIBS_TEST)
+set(LIBS_TEST SDL2 SDL2_gfx)
 
 set(TRACE_FLAGS -O3 -g3 -Wall -Wextra -Wpedantic -Werror -fprofile-arcs -ftest-coverage)
 set(LD_TRACE_FLAGS -fprofile-arcs -ftest-coverage)
-set(LIBS_TRACE )
+set(LIBS_TRACE SDL2 SDL2_gfx)
 
 set(PRERELEASE_FLAGS -O3 -g3 -Wall -Wextra -Wpedantic -Werror -DNDEBUG)
 set(LD_PRERELEASE_FLAGS -static-libstdc++ -static-libgcc)
-set(LIBS_PRERELEASE )
+set(LIBS_PRERELEASE SDL2 SDL2_gfx)
 
 set(RELEASE_FLAGS -O3 -g3 -Wall -Wextra -Wpedantic -Werror -DNDEBUG)
 set(LD_RELEASE_FLAGS )
-set(LIBS_RELEASE )
+set(LIBS_RELEASE SDL2 SDL2_gfx)
 
 file(GLOB_RECURSE SOURCES "src/*.cc" "platform/*.cc")
 

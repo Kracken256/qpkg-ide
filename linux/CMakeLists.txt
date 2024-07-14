@@ -28,6 +28,8 @@ set(LIBS_RELEASE qpkg-ide-platform qpkg-ide-core qpkg-ide-business qpkg-ide-util
 file(GLOB_RECURSE SOURCES "src/*.cc" "platform/*.cc")
 
 add_executable(qpkg-ide-linux ${SOURCES})
+add_dependencies(qpkg-ide-linux qpkg-ide-platform qpkg-ide-core qpkg-ide-business qpkg-ide-utility qpkg-ide-display)
+
 target_include_directories(qpkg-ide-linux PRIVATE "src" 
   ${CMAKE_SOURCE_DIR}/libs/qpkg-ide-platform/include
   ${CMAKE_SOURCE_DIR}/libs/qpkg-ide-core/include
@@ -74,4 +76,3 @@ if (CMAKE_BUILD_TYPE STREQUAL "Release")
 endif()
 
 
-add_dependencies(qpkg-ide-linux qpkg-ide-platform qpkg-ide-core qpkg-ide-business qpkg-ide-utility qpkg-ide-display)

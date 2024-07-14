@@ -5,6 +5,7 @@
 
 namespace qpkg::ide::business {
   class IBusinessLayer final {
+protected:
     static std::atomic<bool> m_initialized;
     std::unique_ptr<core::ICoreLayer> m_core_api;
 

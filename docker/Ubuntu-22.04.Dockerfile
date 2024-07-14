@@ -10,4 +10,4 @@ RUN apt install -y cmake build-essential upx python3 python3-pip git curl wget
 RUN apt install -y libssl-dev libboost-all-dev rapidjson-dev libyaml-cpp-dev
 
 # Install project specific libraries
-RUN apt install -y libsdl2-dev
+RUN apt install -y libsdl2-dev libsdl2-gfx-dev

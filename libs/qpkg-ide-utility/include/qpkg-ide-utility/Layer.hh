@@ -5,6 +5,7 @@
 
 namespace qpkg::ide::utility {
   class IUtilityLayer final {
+protected:
     static std::atomic<bool> m_initialized;
     std::unique_ptr<business::IBusinessLayer> m_business_api;
 

@@ -11,6 +11,8 @@ from subprocess import Popen, PIPE
 # Define the platforms that are supported
 platform_targets = {"ubuntu-22.04": "Ubuntu-22.04.Dockerfile"}
 
+platform_names = {"ubuntu-22.04": "linux"}
+
 # Define the build types that are supported
 #
 # --debug: Moderate optimization, debug symbols, no compression.
@@ -257,6 +259,9 @@ else:
     print("+" + "-" * 78 + "+")
     exit(3)
 
+# END SECURITY: RUN LOCAL OS COMMAND
+# ==============================================================================
+
 
 build_end_time = datetime.now()
 l = f"Build completed at: {build_end_time.strftime('%Y-%m-%d %H:%M:%S')} take a total of {build_end_time - build_start_time}"
@@ -266,3 +271,25 @@ while len(l) > 76:
 else:
     print("| " + l + " " * (76 - len(l)) + " |")
 print("+" + "-" * 78 + "+")
+
+if '--run' in argv and platform_names[platform_name] == 'linux':
+    print()
+    print('Running the application...')
+
+    # ==============================================================================
+    # BEGIN SECURITY: RUN LOCAL OS COMMAND
+
+    local_os_command = path.join(build_directory, "linux", "qpkg-ide-linux")
+
+    l = f"Running the local OS command: \"{local_os_command}\""
+    while len(l) > 76:
+        print("| " + l[:76] + " " * (76 - len(l[:76])) + " |")
+        l = l[76:]
+    else:
+        print("| " + l + " " * (76 - len(l)) + " |")
+
+    # Run the local OS command and capture the output in variable `output` capture
+    system(local_os_command)
+
+    # END SECURITY: RUN LOCAL OS COMMAND
+    # ==============================================================================

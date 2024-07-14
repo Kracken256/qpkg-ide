@@ -5,6 +5,7 @@
 
 namespace qpkg::ide::core {
   class ICoreLayer final {
+protected:
     static std::atomic<bool> m_initialized;
     std::unique_ptr<platform::IPlatformLayer> m_platform_api;
 
