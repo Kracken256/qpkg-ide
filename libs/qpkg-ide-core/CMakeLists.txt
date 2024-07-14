@@ -9,26 +9,28 @@ set(DEBUG_FLAGS -O2 -g3 -Wall -Wextra -Wpedantic)
 set(LD_DEBUG_FLAGS )
 set(LIBS_DEBUG )
 
-set(TEST_FLAGS -O3 -flto -g3 -Wall -Wextra -Wpedantic)
+set(TEST_FLAGS -O3 -g3 -Wall -Wextra -Wpedantic)
 set(LD_TEST_FLAGS -flto)
 set(LIBS_TEST)
 
-set(TRACE_FLAGS -O3 -flto -g3 -Wall -Wextra -Wpedantic -Werror -fprofile-arcs -ftest-coverage)
-set(LD_TRACE_FLAGS -flto -fprofile-arcs -ftest-coverage)
+set(TRACE_FLAGS -O3 -g3 -Wall -Wextra -Wpedantic -Werror -fprofile-arcs -ftest-coverage)
+set(LD_TRACE_FLAGS -fprofile-arcs -ftest-coverage)
 set(LIBS_TRACE )
 
-set(PRERELEASE_FLAGS -O3 -flto -g3 -Wall -Wextra -Wpedantic -Werror -DNDEBUG)
-set(LD_PRERELEASE_FLAGS -flto -static-libstdc++ -static-libgcc)
+set(PRERELEASE_FLAGS -O3 -g3 -Wall -Wextra -Wpedantic -Werror -DNDEBUG)
+set(LD_PRERELEASE_FLAGS -static-libstdc++ -static-libgcc)
 set(LIBS_PRERELEASE )
 
-set(RELEASE_FLAGS -O3 -flto -g3 -Wall -Wextra -Wpedantic -Werror -DNDEBUG)
-set(LD_RELEASE_FLAGS -flto -s -static-libstdc++ -static-libgcc)
+set(RELEASE_FLAGS -O3 -g3 -Wall -Wextra -Wpedantic -Werror -DNDEBUG)
+set(LD_RELEASE_FLAGS )
 set(LIBS_RELEASE )
 
 file(GLOB_RECURSE SOURCES "src/*.cc" "platform/*.cc")
 
 add_library(qpkg-ide-core STATIC ${SOURCES})
-target_include_directories(qpkg-ide-core PRIVATE "src" "include")
+target_include_directories(qpkg-ide-core PRIVATE "src" "include" 
+  ${CMAKE_SOURCE_DIR}/libs/qpkg-ide-platform/include
+)
 
 if (CMAKE_BUILD_TYPE STREQUAL "Debug")
   target_compile_options(qpkg-ide-core PRIVATE ${DEBUG_FLAGS})

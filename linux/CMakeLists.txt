@@ -15,15 +15,15 @@ set(LIBS_TEST qpkg-ide-platform qpkg-ide-core qpkg-ide-business qpkg-ide-utility
 
 set(TRACE_FLAGS -O3 -flto -g3 -Wall -Wextra -Wpedantic -Werror -fprofile-arcs -ftest-coverage)
 set(LD_TRACE_FLAGS -flto -fprofile-arcs -ftest-coverage)
-set(LIBS_TRACE qpke-ide-platform qpkg-ide-core qpkg-ide-business qpkg-ide-utility qpkg-ide-display)
+set(LIBS_TRACE qpkg-ide-platform qpkg-ide-core qpkg-ide-business qpkg-ide-utility qpkg-ide-display)
 
 set(PRERELEASE_FLAGS -O3 -flto -g3 -Wall -Wextra -Wpedantic -Werror -DNDEBUG)
 set(LD_PRERELEASE_FLAGS -flto -static-libstdc++ -static-libgcc)
-set(LIBS_PRERELEASE qpke-ide-platform qpkg-ide-core qpkg-ide-business qpkg-ide-utility qpkg-ide-display)
+set(LIBS_PRERELEASE qpkg-ide-platform qpkg-ide-core qpkg-ide-business qpkg-ide-utility qpkg-ide-display)
 
 set(RELEASE_FLAGS -O3 -flto -g3 -Wall -Wextra -Wpedantic -Werror -DNDEBUG)
 set(LD_RELEASE_FLAGS -flto -s -static-libstdc++ -static-libgcc)
-set(LIBS_RELEASE qpke-ide-platform qpkg-ide-core qpkg-ide-business qpkg-ide-utility qpkg-ide-display)
+set(LIBS_RELEASE qpkg-ide-platform qpkg-ide-core qpkg-ide-business qpkg-ide-utility qpkg-ide-display)
 
 file(GLOB_RECURSE SOURCES "src/*.cc" "platform/*.cc")
 
