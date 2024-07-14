@@ -5,7 +5,7 @@
 #include <thread>
 
 #define PARTICLE_COUNT 400
-#define ITERATIONS 300
+#define ITERATIONS 200
 
 int width = 1, height = 1;
 

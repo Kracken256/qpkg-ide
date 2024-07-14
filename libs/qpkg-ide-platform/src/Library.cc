@@ -37,3 +37,13 @@ bool qpkg::ide::platform::IPlatformLayer::deinit_layer() {
   m_initialized = false;
   return true;
 }
+
+std::string_view qpkg::ide::platform::IPlatformLayer::app_install_dir() const {
+#if defined(__linux__) || defined(__APPLE__)
+  return "/usr/local/share/qpkg-ide";
+#elif defined(_WIN32)
+  return "C:\\Program Files\\qpkg-ide";
+#else
+#error "Unsupported platform."
+#endif
+}

@@ -6,6 +6,8 @@
 
 #include <SDL2/SDL.h>
 
+#define ZOOM_STEP 0.1
+
 /* ==================== Static Members Initialization ==================== */
 std::atomic<bool> qpkg::ide::display::IDisplayLayer::m_initialized;
 qpkg::ide::display::IDisplayLayer *qpkg::ide::display::IDisplayLayer::m_instance;
@@ -36,6 +38,9 @@ bool qpkg::ide::display::IDisplayLayer::init_layer() {
   m_app_state = AppState::INIT_ANIMATION_START;
   m_impl->fps = 120;
   m_impl->mspf = 1000.0 / m_impl->fps;
+  m_impl->conf_width = 1024;
+  m_impl->conf_height = 768;
+  m_impl->zoom = 1.0;
 
   /* ==================== SDL2 Initialization ==================== */
   if (SDL_Init(SDL_INIT_VIDEO) != 0) {
@@ -45,8 +50,8 @@ bool qpkg::ide::display::IDisplayLayer::init_layer() {
 
   /* ==================== Window and Renderer Initialization ==================== */
   m_impl->window = SDL_CreateWindow(
-      "QPKG Integrations", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, 720, 480,
-      SDL_WINDOW_OPENGL | SDL_WINDOW_RESIZABLE | SDL_WINDOW_SHOWN);
+      "QPKG Integrations", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, m_impl->conf_width,
+      m_impl->conf_height, SDL_WINDOW_OPENGL | SDL_WINDOW_RESIZABLE | SDL_WINDOW_SHOWN);
 
   if (m_impl->window == nullptr) {
     std::cerr << "Failed to create window: " << SDL_GetError() << std::endl;
@@ -59,13 +64,12 @@ bool qpkg::ide::display::IDisplayLayer::init_layer() {
     return false;
   }
 
-  SDL_GetWindowSize(m_impl->window, &m_impl->width, &m_impl->height);
-  std::cerr << "[+] Display " << m_impl->width << "x" << m_impl->height << " initialized."
+  SDL_GetWindowSize(m_impl->window, &m_impl->conf_width, &m_impl->conf_height);
+  std::cerr << "[+] Display " << m_impl->conf_width << "x" << m_impl->conf_height << " initialized."
             << std::endl;
 
   /* ==================== Window Configuration ==================== */
   SDL_SetWindowMinimumSize(m_impl->window, 720, 480);
-  SDL_SetWindowBordered(m_impl->window, SDL_FALSE);
 
   /* ==================== Render Init ==================== */
   SDL_SetRenderDrawColor(m_impl->renderer, 12, 13, 20, 255);
@@ -110,12 +114,15 @@ void qpkg::ide::display::IDisplayLayer::update_state() {
     case SDL_WINDOWEVENT: {
       switch (event.window.event) {
       case SDL_WINDOWEVENT_SIZE_CHANGED:
-        m_impl->width = event.window.data1;
-        m_impl->height = event.window.data2;
+        m_impl->conf_width = event.window.data1;
+        m_impl->conf_height = event.window.data2;
+        m_impl->width = m_impl->conf_width / m_impl->zoom;
+        m_impl->height = m_impl->conf_height / m_impl->zoom;
         break;
       case SDL_WINDOWEVENT_RESIZED:
-        m_impl->width = event.window.data1;
-        m_impl->height = event.window.data2;
+        m_impl->conf_width = event.window.data1;
+        m_impl->conf_height = event.window.data2;
+        m_impl->width = m_impl->conf_width / m_impl->zoom;
         std::cerr << "Window resized to " << m_impl->width << "x" << m_impl->height << std::endl;
         break;
       default:
@@ -124,14 +131,87 @@ void qpkg::ide::display::IDisplayLayer::update_state() {
       break;
     }
     case SDL_KEYDOWN: {
-      if (event.key.keysym.sym == SDLK_ESCAPE) {
-        m_impl->running = false;
+      if (event.key.keysym.sym == SDLK_EQUALS && (event.key.keysym.mod & KMOD_CTRL)) {
+        std::cerr << "Ctrl + + pressed." << std::endl;
+        if (m_impl->zoom < 2.6) {
+          std::cerr << "Zooming @ " << (int)(m_impl->zoom * 100) << "%" << std::endl;
+          m_impl->zoom += ZOOM_STEP;
+        } else {
+          std::cerr << "Cannot zoom in further." << std::endl;
+        }
+        break;
       }
+
+      if (event.key.keysym.sym == SDLK_MINUS && (event.key.keysym.mod & KMOD_CTRL)) {
+        if (m_impl->zoom > 0.5) {
+          std::cerr << "Zooming @ " << (int)(m_impl->zoom * 100) << "%" << std::endl;
+          m_impl->zoom -= ZOOM_STEP;
+        } else {
+          std::cerr << "Cannot zoom out further." << std::endl;
+        }
+
+        break;
+      }
+      break;
+    }
+    case SDL_MOUSEBUTTONDOWN: {
+      MouseState state = MouseState::DOWN;
+      MouseButton button;
+
+      if (event.button.button == SDL_BUTTON_LEFT) {
+        button = MouseButton::LEFT;
+      } else if (event.button.button == SDL_BUTTON_MIDDLE) {
+        button = MouseButton::MIDDLE;
+      } else if (event.button.button == SDL_BUTTON_RIGHT) {
+        button = MouseButton::RIGHT;
+      } else {
+        break;
+      }
+      m_impl->mouse_observer.notify(button, state, event.button.x, event.button.y);
+      break;
+    }
+    case SDL_MOUSEBUTTONUP: {
+      MouseState state = MouseState::UP;
+      MouseButton button;
+
+      if (event.button.button == SDL_BUTTON_LEFT) {
+        button = MouseButton::LEFT;
+      } else if (event.button.button == SDL_BUTTON_MIDDLE) {
+        button = MouseButton::MIDDLE;
+      } else if (event.button.button == SDL_BUTTON_RIGHT) {
+        button = MouseButton::RIGHT;
+      } else {
+        break;
+      }
+      m_impl->mouse_observer.notify(button, state, event.button.x, event.button.y);
+      break;
+    }
+    case SDL_MOUSEMOTION: {
+      MouseState state = MouseState::HOVER;
+      MouseButton button;
+
+      if (event.button.button == SDL_BUTTON_LEFT) {
+        button = MouseButton::LEFT;
+      } else if (event.button.button == SDL_BUTTON_MIDDLE) {
+        button = MouseButton::MIDDLE;
+      } else if (event.button.button == SDL_BUTTON_RIGHT) {
+        button = MouseButton::RIGHT;
+      } else {
+        break;
+      }
+      m_impl->mouse_observer.notify(button, state, event.button.x, event.button.y);
       break;
     }
     default:
       break;
     }
+  }
+
+  if (m_impl->last_zoom != m_impl->zoom) {
+    m_impl->last_zoom = m_impl->zoom;
+    SDL_RenderSetScale(m_impl->renderer, m_impl->zoom, m_impl->zoom);
+    m_impl->width = m_impl->conf_width / m_impl->zoom;
+    m_impl->height = m_impl->conf_height / m_impl->zoom;
   }
 }
 
@@ -146,16 +226,24 @@ void qpkg::ide::display::IDisplayLayer::render_state() {
     break;
   case AppState::INIT_ANIMATION_DONE:
     m_app_state = AppState::INIT_DONE;
+    /* Init layers */
+    init_zindex_layer0();
     break;
   case AppState::INIT_DONE:
-    SDL_SetRenderDrawColor(m_impl->renderer, 255, 255, 255, 255);
-    SDL_RenderClear(m_impl->renderer);
+    render_layers();
     break;
   default:
     assert(false);
     break;
   }
   SDL_RenderPresent(m_impl->renderer);
+}
+
+void qpkg::ide::display::IDisplayLayer::render_layers() {
+  SDL_SetRenderDrawColor(m_impl->renderer, 9, 9, 11, 255);
+  SDL_RenderClear(m_impl->renderer);
+
+  render_zindex_layer0();
 }
 
 void qpkg::ide::display::IDisplayLayer::application_update() {

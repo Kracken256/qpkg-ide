@@ -16,5 +16,7 @@ protected:
 public:
     IPlatformLayer(std::vector<std::string_view> args);
     ~IPlatformLayer();
+
+    std::string_view app_install_dir() const;
   };
 } // namespace qpkg::ide::platform

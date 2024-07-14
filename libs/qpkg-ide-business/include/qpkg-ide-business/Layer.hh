@@ -15,5 +15,7 @@ protected:
 public:
     IBusinessLayer(std::unique_ptr<core::ICoreLayer> core);
     ~IBusinessLayer();
+
+    virtual bool request_resource(std::string_view resource_name, std::string &out);
   };
 } // namespace qpkg::ide::business

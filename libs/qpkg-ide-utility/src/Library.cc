@@ -24,6 +24,16 @@ qpkg::ide::utility::IUtilityLayer::~IUtilityLayer() {
 bool qpkg::ide::utility::IUtilityLayer::init_layer() {
   /// TODO: Implement utility layer initialization.
 
+  if (!load_asset_paths()) {
+    std::cerr << "[!] Failed to load asset paths." << std::endl;
+    return false;
+  }
+
+  if (!load_theme_data()) {
+    std::cerr << "[!] Failed to load theme data." << std::endl;
+    return false;
+  }
+
   std::cerr << "[+] Utility layer initialized." << std::endl;
   m_initialized = true;
   return true;

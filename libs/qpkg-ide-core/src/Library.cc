@@ -2,6 +2,9 @@
 #include <iostream>
 #include <qpkg-ide-core/Layer.hh>
 
+#include <filesystem>
+#include <fstream>
+
 std::atomic<bool> qpkg::ide::core::ICoreLayer::m_initialized;
 
 qpkg::ide::core::ICoreLayer::ICoreLayer(
@@ -35,4 +38,40 @@ bool qpkg::ide::core::ICoreLayer::deinit_layer() {
   std::cerr << "[+] Core layer deinitialized." << std::endl;
   m_initialized = false;
   return true;
+}
+
+bool qpkg::ide::core::ICoreLayer::request_resource(std::string_view resource_id,
+                                                   qpkg::ide::core::ResourceType type,
+                                                   std::string &out) {
+  std::filesystem::path appdir = m_platform_api->app_install_dir();
+  std::filesystem::path resource_path = appdir / "resources";
+
+  switch (type) {
+  case ResourceType::JsonData:
+    resource_path /= "json";
+    resource_path /= resource_id;
+    break;
+  case ResourceType::BinaryData:
+    resource_path /= "bin";
+    resource_path /= resource_id;
+    break;
+  case ResourceType::MediaData:
+    resource_path /= "media";
+    resource_path /= resource_id;
+    break;
+  }
+
+  try {
+    std::ifstream file(resource_path);
+    if (!file.is_open()) {
+      std::cerr << "Failed to open resource file: " << resource_path << std::endl;
+      return false;
+    }
+
+    out = std::string((std::istreambuf_iterator<char>(file)), std::istreambuf_iterator<char>());
+    return true;
+  } catch (const std::exception &e) {
+    std::cerr << "Failed to read resource file: " << resource_path << std::endl;
+    return false;
+  }
 }

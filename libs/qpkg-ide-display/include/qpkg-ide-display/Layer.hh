@@ -4,6 +4,10 @@
 #include <qpkg-ide-utility/Layer.hh>
 
 namespace qpkg::ide::display {
+#define RGBA_FETCH(__name) m_utility_api->ThemeLookupRGBA(__name)
+#define SDL_RGBA_UNPACK(__rgba) __rgba.r, __rgba.g, __rgba.b, __rgba.a
+#define GETPATH(__name) m_utility_api->AssetPath(__name).data()
+
   class IDisplayLayer final {
 protected:
     static std::atomic<bool> m_initialized;
@@ -30,8 +34,16 @@ protected:
     virtual void application_update();
     virtual void update_state();
     virtual void render_state();
-
     uint32_t time_left();
+
+    void render_layers();
+
+    void init_zindex_layer0();
+    void render_zindex_layer0();
+
+    void render_left_sidebar();
+    void render_top_bar();
+    void render_bottom_bar();
 
 public:
     IDisplayLayer(std::unique_ptr<utility::IUtilityLayer> utility);
